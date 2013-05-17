@@ -97,10 +97,6 @@ CNF3=b'00000010'=0x02 = SOF = 0  & WAKFIL = 0 & PS2 = 3
 #define CANCTRL 0x0F //Mode control register
 #define CANSTAT 0x0E //Mode status register
 
-//#include "WProgram.h"
-//#include <Arduino.h>
-//#include <SPI.h>
-
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
 #else
@@ -144,8 +140,8 @@ public:
 
 	//Adding can to read status register(pcruce_at_igpp.ucla.edu)
 	//can be used to determine whether a frame was received.
-	//(readStatus() & 0x80) == 0x80 means frame in buffer 0
-	//(readStatus() & 0x40) == 0x40 means frame in buffer 1
+	//(readStatus() & 0x01) == 0x01 means frame in buffer 0
+	//(readStatus() & 0x02) == 0x02 means frame in buffer 1
 	static byte readStatus();
 
 	static void load_0(byte identifier, byte data);//load transmit buffer X

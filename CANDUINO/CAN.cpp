@@ -1,6 +1,6 @@
 #include "CAN.h"
 
-CANClass CAN;//create can object
+CANClass CAN; //create can object
 
 void CANClass::begin()//constructor for initializing can module.
 {
@@ -264,8 +264,8 @@ void CANClass::readDATA_ff_1(byte* length_out,byte *data_out,unsigned short *id_
 
 	//Adding method to read status register
 	//can be used to determine whether a frame was received.
-	//(readStatus() & 0x80) == 0x80 means frame in buffer 0
-	//(readStatus() & 0x40) == 0x40 means frame in buffer 1
+	//(readStatus() & 0x01) == 0x01 means frame in buffer 0
+	//(readStatus() & 0x02) == 0x02 means frame in buffer 1
 byte CANClass::readStatus() 
 {
 	byte retVal;
