@@ -105,11 +105,6 @@ CNF3=b'00000010'=0x02 = SOF = 0  & WAKFIL = 0 & PS2 = 3
 
 #include "SPI.h"
 
-// A union type for can messages
-typedef union _can_message {
-  byte msg_byte[8];
-} can_message;
-
 enum CANMode {CONFIGURATION,NORMAL,SLEEP,LISTEN,LOOPBACK};
 
 class CANClass
