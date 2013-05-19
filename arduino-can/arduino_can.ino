@@ -26,11 +26,10 @@ byte can_receive_buffer[8]; // storage area for received CAN messages
 unsigned short transmit_message_id = 99; // CAN message ID used in messages sent to the CAN bus from this program
 byte received_message_length = 0; // length of received message (number of bytes)
 unsigned short received_message_id = 0; // CAN message ID from received message
-unsigned long display_delay_duration = 2000; // time in milliseconds to keep a received CAN message and info on LCD screen before clearing
+unsigned long display_delay_duration = 5000; // time in milliseconds to keep a received CAN message and info on LCD screen before clearing
 unsigned long message_received_time = 0; // millis() at time of receiving a CAN message
 
 // EMPTY_LINE is declared in the LCD header file
-
 String LCD_line_one = EMPTY_LINE; // LCD dsiplay buffer top line
 String LCD_line_two = EMPTY_LINE; // LCD display buffer bottom line
 
@@ -61,7 +60,6 @@ void setup() {
 
   // initialize and setup the CAN object
   CAN.begin();
-  CAN.setMode(CONFIGURATION);
   CAN.baudConfig(500);
   CAN.setMode(NORMAL);
   
@@ -134,12 +132,12 @@ void loop() {
   if(can_transmit_buffer[0] != 0){
     CAN.load_ff_0((byte) 8, transmit_message_id, &can_transmit_buffer[0]);
     CAN.send_0();
-    delay(1000);
+    delay(1000); // transmit the joystic position CAN message only once every second
   }
 
   // Check for received messages in the CAN-BUS Shield buffer ZERO
   // if there is data in the CAN Shield buffer, then copy it to can_receive_buffer
-  if((CAN.readStatus() & 0x01) == 0x01){
+  if((CAN.readStatus() & 0x01) == 0x01 || (CAN.readStatus() & 0x02) == 0x02){
     message_received_time = millis();
     CAN.readDATA_ff_0(&received_message_length, can_receive_buffer, &received_message_id);
     
@@ -151,44 +149,12 @@ void loop() {
     LCD_line_one += received_message_id;
     LCD_line_one += "  len ";
     LCD_line_one += received_message_length;
-
-    // assemble line two of the LCD
-    LCD_line_two = "msg: ";
-    LCD_line_two += can_receive_buffer[0];
-    LCD_line_two += can_receive_buffer[1];
-    LCD_line_two += can_receive_buffer[2];
-    LCD_line_two += can_receive_buffer[3];
-    LCD_line_two += can_receive_buffer[4];
-    LCD_line_two += can_receive_buffer[5];
-    LCD_line_two += can_receive_buffer[6];
-    LCD_line_two += can_receive_buffer[7];
-  }
-  
-  // Check for received messages in the CAN-BUS Shield buffer ONE
-  // if there is data in the CAN Shield buffer, then copy it to can_receive_buffer
-  if((CAN.readStatus() & 0x02) == 0x02){
-    message_received_time = millis();
-    CAN.readDATA_ff_1(&received_message_length, can_receive_buffer, &received_message_id);
     
-    LCD_line_one = EMPTY_LINE;
-    LCD_line_two = EMPTY_LINE;
+    parallax_serial_LCD.write(MOVE_CURSOR_0_0); // move to top row, all the way left
+    parallax_serial_LCD.print(LCD_line_one); // write line one to LCD screen
+    
+    display_entire_received_CAN_message();
 
-    // assemble line one of the LCD
-    LCD_line_one = "id ";
-    LCD_line_one += received_message_id;
-    LCD_line_one += "  len ";
-    LCD_line_one += received_message_length;
-
-    // assemble line two of the LCD
-    LCD_line_two = "msg: ";
-    LCD_line_two += can_receive_buffer[0];
-    LCD_line_two += can_receive_buffer[1];
-    LCD_line_two += can_receive_buffer[2];
-    LCD_line_two += can_receive_buffer[3];
-    LCD_line_two += can_receive_buffer[4];
-    LCD_line_two += can_receive_buffer[5];
-    LCD_line_two += can_receive_buffer[6];
-    LCD_line_two += can_receive_buffer[7];
   }
 
   //  write the LCD buffers to the LCD screen
@@ -197,4 +163,44 @@ void loop() {
   parallax_serial_LCD.write(MOVE_CURSOR_1_0); // move to bottom row, all the way left
   parallax_serial_LCD.print(LCD_line_two); // write line two to LCD screen
   
+}
+
+void display_entire_received_CAN_message(void){
+  
+  unsigned long byte_display_time = 1500;
+  
+  // assemble line two of the LCD
+  LCD_line_two = "B0: ";
+  LCD_line_two += can_receive_buffer[0];
+  LCD_line_two += "  B1: ";
+  LCD_line_two += can_receive_buffer[1];   
+  parallax_serial_LCD.write(MOVE_CURSOR_1_0); // move to bottom row, all the way left
+  parallax_serial_LCD.print(LCD_line_two); // write line two to LCD screen
+  delay(byte_display_time);
+  
+  LCD_line_two = "B2: ";
+  LCD_line_two += can_receive_buffer[2];
+  LCD_line_two += "  B3: ";
+  LCD_line_two += can_receive_buffer[3];   
+  parallax_serial_LCD.write(MOVE_CURSOR_1_0); // move to bottom row, all the way left
+  parallax_serial_LCD.print(LCD_line_two); // write line two to LCD screen
+  delay(byte_display_time);
+  
+  LCD_line_two = "B4: ";
+  LCD_line_two += can_receive_buffer[4];
+  LCD_line_two += "  B5: ";
+  LCD_line_two += can_receive_buffer[5];   
+  parallax_serial_LCD.write(MOVE_CURSOR_1_0); // move to bottom row, all the way left
+  parallax_serial_LCD.print(LCD_line_two); // write line two to LCD screen
+  delay(byte_display_time);
+  
+  LCD_line_two = "B6: ";
+  LCD_line_two += can_receive_buffer[6];
+  LCD_line_two += "  B7: ";
+  LCD_line_two += can_receive_buffer[7];   
+  parallax_serial_LCD.write(MOVE_CURSOR_1_0); // move to bottom row, all the way left
+  parallax_serial_LCD.print(LCD_line_two); // write line two to LCD screen
+  delay(byte_display_time);
+  
+  return;
 }
