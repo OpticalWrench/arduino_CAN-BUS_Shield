@@ -85,6 +85,9 @@ void setup() {
   
   //  initialize the CAN-BUS Shield transmit buffer to all zeros to be sure there's no garbage in it.
   CAN.load_ff_0((byte) 8, transmit_message_id, &can_transmit_buffer[0]);
+  
+  message_received_time = millis() + display_delay_duration;
+
 }
 
 void loop() {
@@ -109,10 +112,19 @@ void loop() {
   can_receive_buffer[6] = 0x00;
   can_receive_buffer[7] = 0x00;
   
-  // clear the LCD buffers after the "keep it visible" delay time has transpired
+  // clear the LCD screen and buffers after the "keep it visible" delay time has transpired
   if((millis() - message_received_time) >= display_delay_duration){
-    LCD_line_one = EMPTY_LINE;
-    LCD_line_two = EMPTY_LINE;
+    if(LCD_line_one != "CAN monitor v0.1"){
+      
+      LCD_line_one = "CAN monitor v0.1";
+      LCD_line_two = "ready.";
+      
+      clear_LCD();
+      parallax_serial_LCD.write(MOVE_CURSOR_0_0); // move to top row, all the way left
+      parallax_serial_LCD.print(LCD_line_one); // clear line one on the LCD screen
+      parallax_serial_LCD.write(MOVE_CURSOR_1_0); // move to bottom row, all the way left
+      parallax_serial_LCD.print(LCD_line_two); // write line two to LCD screen
+    }
   }
   
   // read all of the joystick digital inputs
@@ -141,6 +153,12 @@ void loop() {
   if(can_transmit_buffer[0] != 0){
     CAN.load_ff_0((byte) 8, transmit_message_id, &can_transmit_buffer[0]);
     CAN.send_0();
+    //  write the joystick input to the LCD screen
+    clear_LCD();
+    parallax_serial_LCD.write(MOVE_CURSOR_0_0); // move to top row, all the way left
+    parallax_serial_LCD.print(LCD_line_one); // write line one to LCD screen
+    parallax_serial_LCD.write(MOVE_CURSOR_1_0); // move to bottom row, all the way left
+    parallax_serial_LCD.print(EMPTY_LINE); // write line two to LCD screen
     delay(1000); // transmit the joystic position CAN message only once every second
   }
 
@@ -158,20 +176,21 @@ void loop() {
     LCD_line_one += received_message_id;
     LCD_line_one += "  len ";
     LCD_line_one += received_message_length;
-    
+    clear_LCD();
     parallax_serial_LCD.write(MOVE_CURSOR_0_0); // move to top row, all the way left
     parallax_serial_LCD.print(LCD_line_one); // write line one to LCD screen
     
     display_entire_received_CAN_message();
 
   }
+}
 
-  //  write the LCD buffers to the LCD screen
+void clear_LCD(void){
   parallax_serial_LCD.write(MOVE_CURSOR_0_0); // move to top row, all the way left
-  parallax_serial_LCD.print(LCD_line_one); // write line one to LCD screen
+  parallax_serial_LCD.print(EMPTY_LINE); // clear line one on the LCD screen
   parallax_serial_LCD.write(MOVE_CURSOR_1_0); // move to bottom row, all the way left
-  parallax_serial_LCD.print(LCD_line_two); // write line two to LCD screen
-  
+  parallax_serial_LCD.print(EMPTY_LINE); // clear line one on the LCD screen
+  return;
 }
 
 void display_entire_received_CAN_message(void){
