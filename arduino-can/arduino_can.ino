@@ -90,7 +90,6 @@ void setup() {
 void loop() {
   
   // clear/empty the transmit buffer
-  
   can_transmit_buffer[0] = 0x00;
   can_transmit_buffer[1] = 0x00;
   can_transmit_buffer[2] = 0x00;
@@ -99,6 +98,16 @@ void loop() {
   can_transmit_buffer[5] = 0x00;
   can_transmit_buffer[6] = 0x00;
   can_transmit_buffer[7] = 0x00;
+  
+  // clear/empty the receive message buffer
+  can_receive_buffer[0] = 0x00;
+  can_receive_buffer[1] = 0x00;
+  can_receive_buffer[2] = 0x00;
+  can_receive_buffer[3] = 0x00;
+  can_receive_buffer[4] = 0x00;
+  can_receive_buffer[5] = 0x00;
+  can_receive_buffer[6] = 0x00;
+  can_receive_buffer[7] = 0x00;
   
   // clear the LCD buffers after the "keep it visible" delay time has transpired
   if((millis() - message_received_time) >= display_delay_duration){
@@ -170,6 +179,7 @@ void display_entire_received_CAN_message(void){
   unsigned long byte_display_time = 1500;
   
   // assemble line two of the LCD
+  LCD_line_two = EMPTY_LINE;
   LCD_line_two = "B0: ";
   LCD_line_two += can_receive_buffer[0];
   LCD_line_two += "  B1: ";
@@ -178,6 +188,7 @@ void display_entire_received_CAN_message(void){
   parallax_serial_LCD.print(LCD_line_two); // write line two to LCD screen
   delay(byte_display_time);
   
+  LCD_line_two = EMPTY_LINE;
   LCD_line_two = "B2: ";
   LCD_line_two += can_receive_buffer[2];
   LCD_line_two += "  B3: ";
@@ -186,6 +197,7 @@ void display_entire_received_CAN_message(void){
   parallax_serial_LCD.print(LCD_line_two); // write line two to LCD screen
   delay(byte_display_time);
   
+  LCD_line_two = EMPTY_LINE;
   LCD_line_two = "B4: ";
   LCD_line_two += can_receive_buffer[4];
   LCD_line_two += "  B5: ";
@@ -194,6 +206,7 @@ void display_entire_received_CAN_message(void){
   parallax_serial_LCD.print(LCD_line_two); // write line two to LCD screen
   delay(byte_display_time);
   
+  LCD_line_two = EMPTY_LINE;
   LCD_line_two = "B6: ";
   LCD_line_two += can_receive_buffer[6];
   LCD_line_two += "  B7: ";
