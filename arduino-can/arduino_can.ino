@@ -4,7 +4,7 @@
 #include <SoftwareSerial.h>
 
 // LCD pin numbers
-#define LCD_SERIAL_RECEIVE_PIN 3
+#define LCD_SERIAL_RECEIVE_PIN 3 // not actually used, but the SoftwareSerial object requires a pin to be assigned.
 #define LCD_SERIAL_TRANSMIT_PIN 6
 
 // CAN-BUS Shield joystick pin numbers
@@ -18,12 +18,18 @@
 #define CAN_SHIELD_LED_2_PIN 8
 #define CAN_SHIELD_LED_3_PIN 7
 
+/*
+ * CAN message ID used in messages sent to the CAN bus from this program
+ * Modify this number to match your setup and make sure that the messages are received!
+ */
+unsigned short TRANSMIT_MESSAGE_ID = 0x420;
+
 // SoftwareSerial object used to interact with the LCD
 SoftwareSerial parallax_serial_LCD(LCD_SERIAL_RECEIVE_PIN, LCD_SERIAL_TRANSMIT_PIN);
 
 byte can_transmit_buffer[8]; // storage area for CAN messages to be transmitted
 byte can_receive_buffer[8]; // storage area for received CAN messages
-unsigned short transmit_message_id = 99; // CAN message ID used in messages sent to the CAN bus from this program
+
 byte received_message_length = 0; // length of received message (number of bytes)
 unsigned short received_message_id = 0; // CAN message ID from received message
 unsigned long display_delay_duration = 5000; // time in milliseconds to keep a received CAN message and info on LCD screen before clearing
@@ -84,7 +90,7 @@ void setup() {
   can_transmit_buffer[7] = 0x00;
   
   //  initialize the CAN-BUS Shield transmit buffer to all zeros to be sure there's no garbage in it.
-  CAN.load_ff_0((byte) 8, transmit_message_id, &can_transmit_buffer[0]);
+  CAN.load_ff_0((byte) 8, TRANSMIT_MESSAGE_ID, &can_transmit_buffer[0]);
   
   message_received_time = millis() + display_delay_duration;
 
@@ -151,7 +157,7 @@ void loop() {
   
   // if a joystick input was detected, then send a message to the CAN bus
   if(can_transmit_buffer[0] != 0){
-    CAN.load_ff_0((byte) 8, transmit_message_id, &can_transmit_buffer[0]);
+    CAN.load_ff_0((byte) 8, TRANSMIT_MESSAGE_ID, &can_transmit_buffer[0]);
     CAN.send_0();
     //  write the joystick input to the LCD screen
     clear_LCD();
@@ -159,7 +165,7 @@ void loop() {
     parallax_serial_LCD.print(LCD_line_one); // write line one to LCD screen
     parallax_serial_LCD.write(MOVE_CURSOR_1_0); // move to bottom row, all the way left
     parallax_serial_LCD.print(EMPTY_LINE); // write line two to LCD screen
-    delay(1000); // transmit the joystic position CAN message only once every second
+    delay(100); // transmit the joystick position CAN message only once every 100 milliseconds
   }
 
   // Check for received messages in the CAN-BUS Shield buffer ZERO
